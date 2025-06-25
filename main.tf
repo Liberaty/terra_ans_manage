@@ -2,7 +2,7 @@
 #######################################
 # Документация: https://github.com/bpg/terraform-provider-proxmox/blob/main/docs/resources/virtual_environment_vm.md
 #######################################
-resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
+resource "proxmox_virtual_environment_vm" "vm" {
   for_each = local.vm_definitions
   # (Необязательно) Имя виртуальной машины
   name           = each.value.vm_name

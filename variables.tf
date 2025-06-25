@@ -28,10 +28,16 @@ variable "vms" {
     group         = string      # имя группы для Ansible inventory (например "web-servers", "db", "it-service")
     address       = string      # IP/маска, например "192.168.1.101/24"; или пустая строка/спец.значение для DHCP
     gateway       = string      # шлюз
-    cores         = number
-    sockets       = number
-    ram_min       = number
-    ram_max       = number
-    vm_name       = string      # хотя ключ map может совпадать с именем, вынес в значение для гибкости
+    cores         = number      # Количество ядер
+    sockets       = number      # Количество сокетов
+    ram_min       = number      # Минимальное количество для динамического режима RAM
+    ram_max       = number      # Максимальное количество для динамического режима RAM
+    vm_name       = string      # map может совпадать с именем, вынес в значение для гибкости
   }))
+}
+
+variable "ansible_inventory_path" {
+  description = "Путь к ansible inventory относительно каталога Terraform (или абсолютный)"
+  type        = string
+  default     = "../ansible/inventory/inventory.yml"
 }

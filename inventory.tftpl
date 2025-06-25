@@ -1,0 +1,16 @@
+all:
+  children:
+    proxmox:
+      hosts:
+        localhost:
+          ansible_host: 192.168.1.54
+
+%{ for grp, hosts in grouped ~}
+    ${grp}:
+      hosts:
+%{ for h in hosts ~}
+        ${h.name}:
+          ansible_host: ${h.ip}
+          ansible_user: ${ansible_user}
+%{ endfor ~}
+%{ endfor ~}
