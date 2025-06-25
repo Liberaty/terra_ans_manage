@@ -25,13 +25,10 @@ resource "proxmox_virtual_environment_vm" "vm" {
     type         = "virtio"
   }
 
-  # Указывает, будет ли VM запускаться при загрузке системы
-  on_boot        = false           # не будет
-
+  # 📦 параметры клонирования
   clone {
     datastore_id = each.value.clone_datastore
     vm_id        = each.value.clone_id
-    # node_name    = var.node
     full         = true
   }
 
@@ -63,7 +60,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   bios           = "ovmf"
   machine        = "q35"
 
-  # ☁️ cloud-init для автоматической настройки версия 1
+  # ☁️ cloud-init для автоматической настройки
   initialization {
     # 
     datastore_id = each.value.data_store
@@ -93,25 +90,14 @@ resource "proxmox_virtual_environment_vm" "vm" {
   # 🏁 Порядок загрузки: сначала ISO, затем диск
   # boot_order    = ["scsi0", "scsi1"]
 
-  # 📦 ISO-образ Ubuntu (расположен в локальном хранилище)
-  # cdrom {
-  #   file_id            = "local:iso/jammy-server-cloudimg-amd64.img"
-  #   interface          = "scsi1"
-  # }
-
-  # cdrom {
-  #   file_id            = "local:iso/cloud-init.iso"
-  #   interface          = "scsi2"
-  # }
-
-  # 💾 Основной диск
+  # 💾 Настройка дополнительного диска
   # disk {
   #   aio           = "io_uring"
   #   backup        = true
   #   cache         = "writethrough"
   #   datastore_id  = "local-zfs"
   #   file_format   = "raw"
-  #   interface     = "scsi0"
+  #   interface     = "scsi2"
   #   replicate     = true
   #   size          = "40"
   #   ssd           = true
