@@ -12,67 +12,26 @@ variable bpg_api_url {
   sensitive   = true
 }
 
-variable vm_name {
-  type        = string
-  description = "Имя создаваемой VM"
-}
-
-variable vmid {
-  type        = number
-  default     = 101
-  description = "Присвоенный ID в Proxmox"
-}
-
-variable node {
-  type        = string
-  default     = "pve"
-  description = "Нода на которой создавать VM"
-}
-
-variable ram_max {
-  type        = number
-  default     = 2048
-  description = "Максимальное число выделенной RAM"
-}
-
-variable ram_min {
-  type        = number
-  default     = 1024
-  description = "Минимальное число выделенной RAM"
-}
-
-variable cores {
-  type        = number
-  default     = 1
-  description = "Количество ядер новой VM"
-}
-
-variable sockets {
-  type        = number
-  default     = 2
-  description = "Количество потоков новой VM"
-}
-
-variable data_store {
-  type        = string
-  default     = "local-zfs"
-  description = "Хранилище расположения VM"
-}
-
-variable address {
-  type        = string
-  default     = "192.168.1.101/24"
-  description = "IP адрес и маска подстеи новой VM"
-}
-
-variable vm_gateway {
-  type        = string
-  default     = "192.168.1.1"
-  description = "Шлюз подсети новой VM"
-}
-
 variable ansible_user {
   type        = string
   description = "Пользователь для подключений Ansible по SSH"
-  # sensitive   = true
+}
+
+variable "vms" {
+  description = "Словарь описаний ВМ, ключ — уникальное имя (идентификатор), значение — объект с параметрами"
+  type = map(object({
+    vm_id         = number      # Proxmox VMID
+    clone_id      = number      # VMID шаблона или параметры клонирования
+    clone_datastore = string    # хранилище шаблона
+    data_store    = string      # хранилище для дисков новой VM
+    node_name     = string      # node в кластере
+    group         = string      # имя группы для Ansible inventory (например "web-servers", "db", "it-service")
+    address       = string      # IP/маска, например "192.168.1.101/24"; или пустая строка/спец.значение для DHCP
+    gateway       = string      # шлюз
+    cores         = number
+    sockets       = number
+    ram_min       = number
+    ram_max       = number
+    vm_name       = string      # хотя ключ map может совпадать с именем, вынес в значение для гибкости
+  }))
 }

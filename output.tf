@@ -1,7 +1,7 @@
-output "vm_info_connection" {
-  description = "SSH connection string for the new VM"
+output "vm_connections" {
+  description = "SSH connection strings for VMs"
   value = {
-    vm-name = proxmox_virtual_environment_vm.ubuntu_clone.name
-    vm-ssh-address = "${var.ansible_user}@${proxmox_virtual_environment_vm.ubuntu_clone.ipv4_addresses[1][0]}"
+    for _, vm in proxmox_virtual_environment_vm.ubuntu_clone :
+    vm.name => "${var.ansible_user}@${vm.ipv4_addresses[1][0]}"
   }
 }

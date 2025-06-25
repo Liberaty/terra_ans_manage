@@ -3,19 +3,20 @@
 # Документация: https://github.com/bpg/terraform-provider-proxmox/blob/main/docs/resources/virtual_environment_vm.md
 #######################################
 resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
+  for_each = local.vm_definitions
   # (Необязательно) Имя виртуальной машины
-  name           = "${var.vm_name}"
+  name           = each.value.vm_name
 
   # (Необязательно) Идентификатор виртуальной машины
-  vm_id          = var.vmid        # Указываем необходимый vmid
+  vm_id          = each.value.vm_id        # Указываем необходимый vmid
 
   # Укажите имя Ноды, которому будет назначена VM.
-  node_name      = "${var.node}"
+  node_name      = each.value.node_name
 
   migrate        = true
 
   # (Необязательно) Описание VM
-  description    = "First VM created with terraform and cloud-init"
+  description    = "Managed by Terraform"
 
   # 🤖 Поддержка QEMU Guest Agent
   agent {
@@ -28,32 +29,44 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   on_boot        = false           # не будет
 
   clone {
-    datastore_id = var.data_store
-    vm_id        = "3002"
+    datastore_id = each.value.clone_datastore
+    vm_id        = each.value.clone_id
     # node_name    = var.node
     full         = true
   }
 
   # 🧠 Память с поддержкой ballooning
   memory {
-    dedicated    = var.ram_max
-    floating     = var.ram_min
+    dedicated    = each.value.ram_max
+    floating     = each.value.ram_min
   }
 
   # 🧠 CPU: 2 ядра, 1 сокет, тип с поддержкой AES
   cpu {
-    cores        = var.cores
-    sockets      = var.sockets
+    cores        = each.value.cores
+    sockets      = each.value.sockets
     type         = "x86-64-v2-AES"
   }
 
-  # 🧬 Тип BIOS
-  bios           = "ovmf"     # UEFI BIOS
+  # 🌐 Сетевое подключение
+  network_device {
+    bridge      = "vmbr0"
+    # enabled     = true
+    # firewall    = false
+    # mac_address = 
+    model       = "virtio"
+    # vlan_id     = each.value.vlan_id # 🏷️ VLAN Tag (раскомментируй при необходимости)
+    # trunks      =
+  }
+
+  # 🧬 Тип виртуальной машины и BIOS
+  bios           = "ovmf"
+  machine        = "q35"
 
   # ☁️ cloud-init для автоматической настройки версия 1
   initialization {
     # 
-    datastore_id = var.data_store
+    datastore_id = each.value.data_store
     # interface     = "scsi2"
     # 
     # dns {
@@ -61,19 +74,20 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
     #   servers     = local.vm_dns
     # }
     # 🌐 Статическая сеть
+    # IP: если address непустой — ставим static, иначе DHCP
     ip_config {
       ipv4 {
-        address  = var.address
-        gateway  = var.vm_gateway
+        address  = each.value.address
+        gateway  = each.value.gateway
       }
     }
-    #
+    # Пример: если DHCP: не передавать ip_config, Proxmox выставит DHCP
+    
     # user_account {
     #   keys        = [file(local.ssh_key_path)]            # 🔑 Авторизация по SSH
     #   password    = var.vm_password                       # 🔐 Пароль (вводится вручную)
     #   username    = local.ssh_user                        # 👤 Пользователь VM
-    # }
-    # user_data_file_id   = "local:snippets/user-data-cloud-config.yaml"                                    
+    # }                                    
   }
 
   # 🏁 Порядок загрузки: сначала ISO, затем диск
@@ -109,20 +123,6 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   #   file_format        = "raw"
   #   type               = "4m"
   #   pre_enrolled_keys  = true
-  # }
-
-  # 🧬 Тип виртуальной машины
-  # machine       = "q35"
-
-  # 🌐 Сетевое подключение
-  # network_device {
-  #   bridge      = "vmbr0"
-  #   enabled     = true
-  #   firewall    = false
-  #   # mac_address = 
-  #   model       = "virtio"
-  #   # vlan_id     = 100       # 🏷️ VLAN Tag (раскомментируй при необходимости)
-  #   # trunks      =
   # }
 
   # Настройка операционной системы
