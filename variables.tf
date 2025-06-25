@@ -12,7 +12,6 @@ variable bpg_api_url {
   sensitive   = true
 }
 
-
 variable vm_name {
   type        = string
   description = "Имя создаваемой VM"
@@ -23,7 +22,6 @@ variable vmid {
   default     = 101
   description = "Присвоенный ID в Proxmox"
 }
-
 
 variable node {
   type        = string
@@ -67,12 +65,14 @@ variable address {
   description = "IP адрес и маска подстеи новой VM"
 }
 
-
 variable vm_gateway {
   type        = string
   default     = "192.168.1.1"
   description = "Шлюз подсети новой VM"
 }
 
-
-
+variable ansible_user {
+  type        = string
+  description = "Пользователь для подключений Ansible по SSH"
+  sensitive   = true
+}

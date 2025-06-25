@@ -4,28 +4,28 @@
 #######################################
 resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
   # (Необязательно) Имя виртуальной машины
-  name          = "${var.vm_name}"
+  name           = "${var.vm_name}"
 
   # (Необязательно) Идентификатор виртуальной машины
-  vm_id         = var.vmid        # Указываем необходимый vmid
+  vm_id          = var.vmid        # Указываем необходимый vmid
 
   # Укажите имя Ноды, которому будет назначена VM.
-  node_name     = "${var.node}"
+  node_name      = "${var.node}"
 
-  migrate       = true
+  migrate        = true
 
   # (Необязательно) Описание VM
-  description   = "First VM created with terraform and cloud-init"
+  description    = "First VM created with terraform and cloud-init"
 
   # 🤖 Поддержка QEMU Guest Agent
   agent {
-    enabled = true
-    trim    = true
-    type    = "virtio"
+    enabled      = true
+    trim         = true
+    type         = "virtio"
   }
 
   # Указывает, будет ли VM запускаться при загрузке системы
-  on_boot       = false           # не будет
+  on_boot        = false           # не будет
 
   clone {
     datastore_id = var.data_store
@@ -36,19 +36,45 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
 
   # 🧠 Память с поддержкой ballooning
   memory {
-    dedicated   = var.ram_max
-    floating    = var.ram_min
+    dedicated    = var.ram_max
+    floating     = var.ram_min
   }
 
   # 🧠 CPU: 2 ядра, 1 сокет, тип с поддержкой AES
   cpu {
-    cores       = var.cores
-    sockets     = var.sockets
-    type        = "x86-64-v2-AES"
+    cores        = var.cores
+    sockets      = var.sockets
+    type         = "x86-64-v2-AES"
   }
 
   # 🧬 Тип BIOS
-  bios          = "ovmf"     # UEFI BIOS
+  bios           = "ovmf"     # UEFI BIOS
+
+  # ☁️ cloud-init для автоматической настройки версия 1
+  initialization {
+    # 
+    datastore_id = var.data_store
+    # interface     = "scsi2"
+    # 
+    # dns {
+    #   domain      = local.vm_domain
+    #   servers     = local.vm_dns
+    # }
+    # 🌐 Статическая сеть
+    ip_config {
+      ipv4 {
+        address  = var.address
+        gateway  = var.vm_gateway
+      }
+    }
+    #
+    # user_account {
+    #   keys        = [file(local.ssh_key_path)]            # 🔑 Авторизация по SSH
+    #   password    = var.vm_password                       # 🔐 Пароль (вводится вручную)
+    #   username    = local.ssh_user                        # 👤 Пользователь VM
+    # }
+    # user_data_file_id   = "local:snippets/user-data-cloud-config.yaml"                                    
+  }
 
   # 🏁 Порядок загрузки: сначала ISO, затем диск
   # boot_order    = ["scsi0", "scsi1"]
@@ -147,34 +173,4 @@ resource "proxmox_virtual_environment_vm" "ubuntu_clone" {
 
   # (Необязательно) Включение USB. Это позволяет напрямую использовать физические USB-устройства в гостевой операционной системе (по умолчанию true).
   # tablet_device   = true
-
-  
-
-  # ☁️ cloud-init для автоматической настройки версия 1
-  initialization {
-    # 
-    datastore_id  = var.data_store
-    # interface     = "scsi2"
-    # 
-    # dns {
-    #   domain      = local.vm_domain
-    #   servers     = local.vm_dns
-    # }
-    # 🌐 Статическая сеть
-    ip_config {
-      ipv4 {
-        # address   = "${var.vm_ip}/${var.vm_mask}"
-        address   = var.address
-        gateway   = var.vm_gateway
-      }
-    }
-    #
-    # user_account {
-    #   keys        = [file(local.ssh_key_path)]            # 🔑 Авторизация по SSH
-    #   password    = var.vm_password                       # 🔐 Пароль (вводится вручную)
-    #   username    = local.ssh_user                        # 👤 Пользователь VM
-    # }
-    # user_data_file_id   = "local:snippets/user-data-cloud-config.yaml"
-    # hostname      = local.vm_hostname                                               # 🏷️ Hostname                                       
-  }
 }
