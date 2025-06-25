@@ -74,5 +74,5 @@ variable vm_gateway {
 variable ansible_user {
   type        = string
   description = "Пользователь для подключений Ansible по SSH"
-  sensitive   = true
+  # sensitive   = true
 }
